@@ -184,3 +184,5 @@ Das sind die Ressourcen die ich am meisten genutzt habe.
 - [Disk-Forensik/ Beweismittelanalyse/ SleuthKit](https://de.wikibooks.org/wiki/Disk-Forensik/_Beweismittelanalyse/_SleuthKit)
 - [The Law Enforcement and Forensic Examiner's Introduction to Linux](https://linuxleo.com/Docs/LinuxLeo_4.95.1.pdf)
 - [Device vs Partition vs File System vs Volume](https://stackoverflow.com/questions/24429949/device-vs-partition-vs-file-system-vs-volume-how-do-these-concepts-relate-to-ea)
+- [Overwite part of disk image using dd](https://wiki.linuxquestions.org/wiki/Some_dd_examples)
+- [Digital forensics XML and the DFXML toolset](https://simson.net/clips/academic/2012.DI.dfxml.pdf)
