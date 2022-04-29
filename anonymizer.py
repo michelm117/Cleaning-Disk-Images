@@ -2,14 +2,16 @@ import argparse
 from dis import dis
 import logging
 import os
+import re
 import shutil
 import subprocess
 import sys
+from typing import Set
 
 from cairo import Path
 from lxml import etree
 
-from walkfile_parser import parse
+from walkfile_parser import parseFiWalk
 
 # Software needed:
 #   - disktype
@@ -56,28 +58,33 @@ def _configure_logging(args, destina_path) -> logging.Logger:
     fileHandler.setFormatter(formatter)
     Logger.addHandler(fileHandler)
 
-    #logging.basicConfig(filename=log_file, level=level, format=log_format)
+    # logging.basicConfig(filename=log_file, level=level, format=log_format)
     return Logger
 
 
 def init_destination(destina_path: Path, args):
-    if os.path.exists(destina_path):
-        enter = input(
-            "Destination folder exists, content will be deleted. Continue? [Y/n]: ")
-
-    if enter.upper() == 'N':
-        print("No\n")
-        exit()
-    print("Yes\n")
-
     # TODO: Delete after release
     if not args.d:
-        shutil.rmtree(destina_path)
+        if os.path.exists(destina_path):
+            enter = input(
+                "Destination folder exists, content will be deleted. Continue? [Y/n]: ")
+
+            if enter.upper() == 'N':
+                print("No\n")
+                exit()
+            print("Yes\n")
+
+        if os.path.exists(destina_path):
+            shutil.rmtree(destina_path)
+        if os.path.exists(os.path.join(destina_path, "reports")):
+            shutil.rmtree(os.path.join(destina_path, "reports"))
+
+        if os.path.exists(os.path.join(destina_path, "files")):
+            shutil.rmtree(os.path.join(destina_path, "files"))
     else:
         try:
             os.remove(os.path.join(destina_path, "anonymizer.log"))
-            shutil.rmtree(os.path.join(destina_path, "reports"))
-            shutil.rmtree(os.path.join(destina_path, "files"))
+
         except Exception as _e:
             pass
 
@@ -117,32 +124,10 @@ def config_img_workspace(Logger, disk_image_name, disk_images_path,
                 disk_image_name)
     _reports_path = os.path.join(reports_path, disk_image_name)
     _files_path = os.path.join(files_path, disk_image_name)
-    for new_dir in _reports_path, _files_path:
-        os.makedirs(new_dir)
+    if not args.d:
+        for new_dir in _reports_path, _files_path:
+            os.makedirs(new_dir)
     return _reports_path, _files_path, disk_image_path
-
-
-def main():
-    parser = _make_parser()
-    args = parser.parse_args()
-
-    # Configure destination
-    destina_path = os.path.abspath(args.destination)
-    reports_path, diskimages_path, files_path = init_destination(
-        destina_path, args)
-
-    Logger = _configure_logging(args, destina_path)
-
-    # Configure source
-    source_dir = os.path.abspath(args.source)
-    init_source(source_dir, Logger)
-
-    for disk_image_name in os.listdir(source_dir):
-        _reports_path, _files_path, disk_image_path = config_img_workspace(Logger, disk_image_name, diskimages_path,
-                                                                           source_dir, reports_path, files_path,
-                                                                           args)
-        analyse_disk_image(Logger, disk_image_name, disk_image_path,
-                           _reports_path, diskimages_path, _files_path)
 
 
 def disktype(Logger, disk_image_name, disk_image_path, reports_path):
@@ -208,7 +193,7 @@ def fiwalk(Logger: logging.Logger, disk_fs, disk_image_name,
         Logger.error("Filesystem is not supported.")
         raise Exception("Filesystem is not supported.")
 
-    Logger.info("File and inode walk on '%s'." %
+    Logger.info("File and Inode walk on '%s'." %
                 disk_image_name)
     fiwalk_file = os.path.abspath(
         os.path.join(reports_path, "dfxml.xml"))
@@ -223,14 +208,64 @@ def fiwalk(Logger: logging.Logger, disk_fs, disk_image_name,
 
 
 def analyse_disk_image(Logger, disk_image_name, disk_image_path,
-                       reports_path, diskimages_path, files_path):
+                       reports_path, diskimages_path, files_path,
+                       args):
     disk_fs = disktype(Logger, disk_image_name, disk_image_path, reports_path)
-    fiwalk_file = fiwalk(Logger,  disk_fs, disk_image_name,
-                         disk_image_path, reports_path)
-    filesystems = parse(fiwalk_file)
+    if not args.d:
+        fiwalk_file = fiwalk(Logger,  disk_fs, disk_image_name,
+                             disk_image_path, reports_path)
+    else:
+        fiwalk_file = os.path.abspath(
+            os.path.join(reports_path, "dfxml.xml"))
+    filesystems = parseFiWalk(fiwalk_file)
+
+    file_types = {}
     for fs in filesystems:
-        print("\n%s" % fs)
-        print(fs.files.get(list(fs.files)[-1]))
+        # print("\n%s" % fs)
+        # print(fs.files.get(list(fs.files)[-1]))
+        for inode, f_file in fs.files.items():
+            if f_file.libmagic != 'empty' and f_file.name_type != 'd' and 'home/' in f_file.filename:
+                # 'ELF 64-bit LSB' not in f_file.libmagic and \
+                # 'timezone data' not in f_file.libmagic and \
+                #     'GNU message catalog' not in f_file.libmagic:
+                val = re.sub(r'\(\d*\)', '', f_file.libmagic)
+                key = val.split(',')[0]
+                if key not in file_types:
+                    file_types[key] = []
+                file_types[key].append(f_file.filename)
+                # file_types.add(f_file.libmagic)
+    keys = file_types.keys()
+    os.remove("test.txt")
+    with open("test.txt", "a") as myfile:
+        for key in keys:
+            myfile.write(key + '\n')
+            for val in file_types[key]:
+                myfile.write('\t' + val + '\n')
+            myfile.write('\n')
+
+
+def main():
+    parser = _make_parser()
+    args = parser.parse_args()
+
+    # Configure destination
+    destina_path = os.path.abspath(args.destination)
+    reports_path, diskimages_path, files_path = init_destination(
+        destina_path, args)
+
+    Logger = _configure_logging(args, destina_path)
+
+    # Configure source
+    source_dir = os.path.abspath(args.source)
+    init_source(source_dir, Logger)
+
+    for disk_image_name in os.listdir(source_dir):
+        _reports_path, _files_path, disk_image_path = config_img_workspace(Logger, disk_image_name, diskimages_path,
+                                                                           source_dir, reports_path, files_path,
+                                                                           args)
+        analyse_disk_image(Logger, disk_image_name, disk_image_path,
+                           _reports_path, diskimages_path, _files_path,
+                           args)
 
 
 if __name__ == "__main__":

@@ -4,7 +4,7 @@ from filesystem import Filesystem
 from filesystem_file import Filesystem_file
 
 
-def parse(filepath: string) -> list[Filesystem]:
+def parseFiWalk(filepath: string) -> list[Filesystem]:
     with open(filepath) as file:
         nbr_fs = 0
         is_collecting_fs_info = False
@@ -48,7 +48,7 @@ def parse(filepath: string) -> list[Filesystem]:
                 continue
 
             elif is_collecting_file_info and line != "":
-                key, val = line.split(": ")
+                key, val = line.split(": ", 1)
                 para[key] = val
                 continue
 

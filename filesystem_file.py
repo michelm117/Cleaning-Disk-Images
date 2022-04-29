@@ -10,36 +10,36 @@ class Filesystem_file:
                  dtime, dtime_txt,
                  libmagic
                  ) -> None:
-        self.parent_inode = parent_inode
-        self.filename = filename
-        self.partition = partition
-        self.id = file_id
-        self.name_type = name_type
-        self.filesize = filesize
-        self.alloc = alloc
-        self.used = used
-        self.inode = inode
-        self.meta_type = meta_type
-        self.mode = mode
-        self.nlink = nlink
-        self.uid = uid
-        self.gid = gid
-        self.md5 = md5
-        self.sha1 = sha1
-        self.mtime = mtime
-        self.mtime_txt = mtime_txt
-        self.ctime = ctime
-        self.ctime_txt = ctime_txt
-        self.atime = atime
-        self.atime_txt = atime_txt
-        self.crtime = crtime
-        self.crtime_txt = crtime_txt
-        self.dtime = dtime
-        self.dtime_txt = dtime_txt,
-        self.libmagic = libmagic
+        self.parent_inode: str = parent_inode
+        self.filename: str = filename
+        self.partition: str = partition
+        self.id: str = file_id
+        self.name_type: str = name_type
+        self.filesize: str = filesize
+        self.alloc: str = alloc
+        self.used: str = used
+        self.inode: str = inode
+        self.meta_type: str = meta_type
+        self.mode: str = mode
+        self.nlink: str = nlink
+        self.uid: str = uid
+        self.gid: str = gid
+        self.md5: str = md5
+        self.sha1: str = sha1
+        self.mtime: str = mtime
+        self.mtime_txt: str = mtime_txt
+        self.ctime: str = ctime
+        self.ctime_txt: str = ctime_txt
+        self.atime: str = atime
+        self.atime_txt: str = atime_txt
+        self.crtime: str = crtime
+        self.crtime_txt: str = crtime_txt
+        self.dtime: str = dtime
+        self.dtime_txt: str = dtime_txt,
+        self.libmagic: str = libmagic
 
     def __str__(self) -> str:
-        st = "parent_inode: %s\nfilename: %s\npartition: %s\nid: %s\nname_type: %s\nfilesize: %s\nalloc: %s\nused: %s\ninode: %s\nmeta_type: %s\nmode: %s\nnlink: %s\nuid: %s\ngid: %s\nmd5: %s\nsha1: %s\nmtime: %s\nmtime_txt: %s\nctime: %s\nctime_txt: %s\natime: %s\natime_txt: %s\ncrtime: %s\ncrtime_txt: %s\nmtime: %s\ndtime_txt: %s" % (
+        st = "parent_inode: {0}\nfilename: {1}\npartition: {2}\nid: {3}\nname_type: {4}\nfilesize: {5}\nalloc: {6}\nused: {7}\ninode: {8}\nmeta_type: {9}\nmode: {10}\nnlink: {11}\nuid: {12}\ngid: {13}\nmd5: {14}\nsha1: {15}\nmtime: {16}\nmtime_txt: {17}\nctime: {18}\nctime_txt: {19}\natime: {20}\natime_txt: {21}\ncrtime: {22}\ncrtime_txt: {23}\nmtime: {24}\ndtime_txt: {25}".format(
             self.parent_inode,
             self.filename,
             self.partition,

@@ -1,3 +1,4 @@
+from typing import Dict
 from filesystem_file import Filesystem_file
 
 
@@ -6,15 +7,15 @@ class Filesystem:
                  block_size, ftype,
                  ftype_str, block_count,
                  first_block, last_block) -> None:
-        self.partition_offset = partition_offset
-        self.sector_size = sector_size
-        self.block_size = block_size
-        self.ftype = ftype
-        self.ftype_str = ftype_str
-        self.block_count = block_count
-        self.first_block = first_block
-        self.last_block = last_block
-        self.files = {}
+        self.partition_offset: str = partition_offset
+        self.sector_size: str = sector_size
+        self.block_size: str = block_size
+        self.ftype: str = ftype
+        self.ftype_str: str = ftype_str
+        self.block_count: str = block_count
+        self.first_block: str = first_block
+        self.last_block: str = last_block
+        self.files: Dict[str, Filesystem_file] = {}
 
     def add_file(self, file: Filesystem_file) -> None:
         self.files[file.inode] = file
